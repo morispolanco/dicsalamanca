@@ -6,6 +6,20 @@ import json
 SERPER_API_KEY = st.secrets["SERPER_API_KEY"]
 TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
 
+# Lista de 50 conceptos relacionados con la Escuela de Salamanca
+CONCEPTOS = [
+    "Derecho natural", "Derecho de gentes", "Justicia", "Ley", "Soberanía",
+    "Propiedad privada", "Precio justo", "Usura", "Contrato", "Libertad",
+    "Libre albedrío", "Tiranía", "Guerra justa", "Conquista", "Colonización",
+    "Esclavitud", "Indios", "Evangelización", "Poder civil", "Poder eclesiástico",
+    "Derecho internacional", "Economía", "Mercado", "Valor", "Dinero",
+    "Inflación", "Comercio", "Impuestos", "Bien común", "Estado",
+    "Sociedad", "Individuo", "Derechos humanos", "Dignidad humana", "Igualdad",
+    "Educación", "Conocimiento", "Razón", "Fe", "Teología",
+    "Filosofía", "Ética", "Moral", "Virtud", "Pecado",
+    "Salvación", "Gracia", "Naturaleza humana", "Sociedad civil", "Autoridad"
+]
+
 def buscar_informacion(query):
     url = "https://google.serper.dev/search"
     payload = json.dumps({
@@ -54,27 +68,40 @@ def generar_definicion(concepto, info):
 def main():
     st.title("Conceptos de la Escuela de Salamanca")
     
-    concepto = st.text_input("Introduce un concepto para definir:")
+    # Crear dos columnas
+    col1, col2 = st.columns([1, 2])
     
-    if st.button("Generar Definición"):
-        if concepto:
-            with st.spinner("Buscando información y generando definición..."):
-                # Buscar información
-                info = buscar_informacion(f"{concepto} Escuela de Salamanca")
-                
-                # Extraer texto relevante de los resultados de búsqueda
-                texto_relevante = ""
-                for resultado in info.get('organic', [])[:3]:
-                    texto_relevante += resultado.get('snippet', '') + " "
-                
-                # Generar definición
-                definicion = generar_definicion(concepto, texto_relevante)
-                
-                # Mostrar resultado
-                st.subheader("Definición generada:")
-                st.write(definicion)
-        else:
-            st.warning("Por favor, introduce un concepto.")
+    with col1:
+        st.subheader("Lista de Conceptos")
+        concepto_seleccionado = st.selectbox("Selecciona un concepto:", CONCEPTOS)
+        
+        st.subheader("O introduce tu propio concepto:")
+        concepto_personalizado = st.text_input("Concepto personalizado:")
+    
+    with col2:
+        st.subheader("Definición del Concepto")
+        
+        # Determinar qué concepto usar
+        concepto_final = concepto_personalizado if concepto_personalizado else concepto_seleccionado
+        
+        if st.button("Generar Definición"):
+            if concepto_final:
+                with st.spinner("Buscando información y generando definición..."):
+                    # Buscar información
+                    info = buscar_informacion(f"{concepto_final} Escuela de Salamanca")
+                    
+                    # Extraer texto relevante de los resultados de búsqueda
+                    texto_relevante = ""
+                    for resultado in info.get('organic', [])[:3]:
+                        texto_relevante += resultado.get('snippet', '') + " "
+                    
+                    # Generar definición
+                    definicion = generar_definicion(concepto_final, texto_relevante)
+                    
+                    # Mostrar resultado
+                    st.write(definicion)
+            else:
+                st.warning("Por favor, selecciona un concepto o introduce uno personalizado.")
 
 if __name__ == "__main__":
     main()
