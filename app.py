@@ -6,7 +6,10 @@ import json
 SERPER_API_KEY = st.secrets["SERPER_API_KEY"]
 TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
 
-# Lista de 50 conceptos relacionados con la Escuela de Salamanca
+# Configurar el modo ancho por defecto
+st.set_page_config(layout="wide")
+
+# Lista ampliada de 200 conceptos relacionados con la Escuela de Salamanca y temas afines
 CONCEPTOS = [
     "Derecho natural", "Derecho de gentes", "Justicia", "Ley", "Soberanía",
     "Propiedad privada", "Precio justo", "Usura", "Contrato", "Libertad",
@@ -17,7 +20,37 @@ CONCEPTOS = [
     "Sociedad", "Individuo", "Derechos humanos", "Dignidad humana", "Igualdad",
     "Educación", "Conocimiento", "Razón", "Fe", "Teología",
     "Filosofía", "Ética", "Moral", "Virtud", "Pecado",
-    "Salvación", "Gracia", "Naturaleza humana", "Sociedad civil", "Autoridad"
+    "Salvación", "Gracia", "Naturaleza humana", "Sociedad civil", "Autoridad",
+    "Probabilismo", "Monarquía", "República", "Tiranicidio", "Dominio",
+    "Propiedad", "Comunidad", "Ley natural", "Ley positiva", "Ley divina",
+    "Ley eterna", "Justicia conmutativa", "Justicia distributiva", "Bien común", "Prudencia",
+    "Fortaleza", "Templanza", "Caridad", "Esperanza", "Misericordia",
+    "Libre comercio", "Monopolio", "Competencia", "Oferta y demanda", "Valor del trabajo",
+    "Salario justo", "Interés", "Cambio de divisas", "Banca", "Crédito",
+    "Deuda pública", "Fiscalidad", "Tributos", "Diezmo", "Simonía",
+    "Patronato regio", "Regalismo", "Conciliarismo", "Papado", "Reforma protestante",
+    "Contrarreforma", "Inquisición", "Herejía", "Ortodoxia", "Dogma",
+    "Casuística", "Probabilismo moral", "Tuciorismo", "Laxismo", "Rigorismo",
+    "Conciencia", "Ley natural", "Derecho subjetivo", "Derecho objetivo", "Ius gentium",
+    "Ius civile", "Ius naturale", "Derecho de resistencia", "Pacto social", "Contrato social",
+    "Origen del poder", "Traslación del poder", "Legitimidad", "Tiranía de origen", "Tiranía de ejercicio",
+    "Regicidio", "Magnicidio", "Razón de Estado", "Maquiavelismo", "Tacitismo",
+    "Providencia", "Predestinación", "Libre arbitrio", "Gracia suficiente", "Gracia eficaz",
+    "Jansenismo", "Molinismo", "Bañecianismo", "Congruismo", "Ciencia media",
+    "Futuribles", "Premoción física", "Concurso divino", "Causa segunda", "Causa primera",
+    "Metafísica", "Ontología", "Epistemología", "Lógica", "Retórica",
+    "Gramática", "Dialéctica", "Física", "Cosmología", "Psicología",
+    "Antropología", "Escatología", "Soteriología", "Cristología", "Eclesiología",
+    "Mariología", "Pneumatología", "Angelología", "Demonología", "Hamartiología",
+    "Justificación", "Santificación", "Predestinación", "Reprobación", "Limbo",
+    "Purgatorio", "Indulgencias", "Sacramentos", "Eucaristía", "Penitencia",
+    "Orden sacerdotal", "Matrimonio", "Celibato", "Votos religiosos", "Mística",
+    "Ascética", "Oración mental", "Contemplación", "Éxtasis", "Revelación",
+    "Tradición", "Magisterio", "Concilio", "Sínodo", "Bula papal",
+    "Encíclica", "Canon bíblico", "Exégesis", "Hermenéutica", "Patrística",
+    "Escolástica", "Tomismo", "Escotismo", "Nominalismo", "Realismo",
+    "Humanismo", "Renacimiento", "Barroco", "Ilustración", "Modernidad",
+    "Secularización", "Confesionalidad", "Tolerancia religiosa", "Libertad de conciencia", "Libertad religiosa"
 ]
 
 def buscar_informacion(query):
@@ -66,9 +99,9 @@ def generar_definicion(concepto, info):
         return f"Error en la generación: {response.status_code} - {response.text}"
 
 def main():
-    st.title("Conceptos de la Escuela de Salamanca")
+    st.title("200 Conceptos de la Escuela de Salamanca")
     
-    # Crear dos columnas
+    # Crear dos columnas con proporción 1:2
     col1, col2 = st.columns([1, 2])
     
     with col1:
