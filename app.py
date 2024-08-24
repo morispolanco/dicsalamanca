@@ -9,92 +9,94 @@ TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
 # Configurar el modo ancho por defecto
 st.set_page_config(layout="wide")
 
-# Lista ampliada de 500 conceptos relacionados con la Escuela de Salamanca y temas afines
-CONCEPTOS = [
-    "Derecho natural", "Derecho de gentes", "Justicia", "Ley", "Soberanía",
-    "Propiedad privada", "Precio justo", "Usura", "Contrato", "Libertad",
-    "Libre albedrío", "Tiranía", "Guerra justa", "Conquista", "Colonización",
-    # ... [Se omiten los conceptos intermedios por brevedad] ...
-    "Secularización", "Confesionalidad", "Tolerancia religiosa", "Libertad de conciencia", "Libertad religiosa",
-    "Ius communicationis", "Ius peregrinandi", "Ius commercii", "Ius praedicandi", "Ius migrandi",
-    "Derecho de descubrimiento", "Derecho de ocupación", "Res nullius", "Terra nullius", "Dominium",
-    "Imperium", "Potestad", "Jurisdicción", "Fuero", "Privilegio",
-    "Regalía", "Mayorazgo", "Señorío", "Vasallaje", "Encomienda",
-    "Repartimiento", "Mita", "Obraje", "Hacienda", "Estanco",
-    "Monopolio real", "Asiento", "Capitulación", "Bula papal", "Patronato regio",
-    "Vicariato regio", "Regalismo", "Galicanismo", "Febronianismo", "Josefinismo",
-    "Absolutismo", "Despotismo ilustrado", "Constitucionalismo", "Parlamentarismo", "Republicanismo",
-    "Escolástica tardía", "Segunda escolástica", "Escuela de Salamanca", "Escuela de Coímbra", "Casuismo",
-    "Probabilismo", "Equiprobabilismo", "Probabiliorismo", "Tuciorismo", "Laxismo",
-    "Rigorismo", "Jansenismo", "Molinismo", "Bañecianismo", "Suarismo",
-    "Tomismo", "Escotismo", "Ockhamismo", "Nominalismo", "Realismo moderado",
-    "Realismo exagerado", "Conceptualismo", "Universales", "Esencia", "Existencia",
-    "Acto", "Potencia", "Materia", "Forma", "Sustancia",
-    "Accidente", "Causa", "Efecto", "Finalidad", "Teleología",
-    "Providencia", "Predestinación", "Gracia", "Libre arbitrio", "Concurso divino",
-    "Ciencia media", "Futuribles", "Premoción física", "Causa segunda", "Causa primera",
-    "Analogía del ser", "Trascendentales", "Unidad", "Verdad", "Bondad",
-    "Belleza", "Ente", "Esencia", "Existencia", "Subsistencia",
-    "Persona", "Naturaleza", "Hipóstasis", "Unión hipostática", "Encarnación",
-    "Trinidad", "Procesiones divinas", "Relaciones subsistentes", "Apropiaciones", "Misiones divinas",
-    "Creación", "Conservación", "Concurso", "Providencia", "Gobierno divino",
-    "Milagro", "Profecía", "Revelación", "Inspiración", "Tradición",
-    "Magisterio", "Infalibilidad", "Ex cathedra", "Sensus fidelium", "Desarrollo doctrinal",
-    "Hermenéutica", "Exégesis", "Tipología bíblica", "Alegoría", "Anagogía",
-    "Tropología", "Cuádruple sentido de la Escritura", "Canon bíblico", "Deuterocanónicos", "Apócrifos",
-    "Patrística", "Padres apostólicos", "Padres apologistas", "Padres de la Iglesia", "Doctores de la Iglesia",
-    "Concilio", "Sínodo", "Colegio episcopal", "Primado papal", "Infalibilidad papal",
-    "Jurisdicción ordinaria", "Jurisdicción delegada", "Potestad de orden", "Potestad de jurisdicción", "Potestad de magisterio",
-    "Sacramento", "Ex opere operato", "Ex opere operantis", "Materia y forma sacramental", "Carácter sacramental",
-    "Transubstanciación", "Consubstanciación", "Presencia real", "Comunión", "Sacrificio eucarístico",
-    "Misa", "Liturgia", "Rito", "Ceremonia", "Rubrica",
-    "Orden sagrado", "Sacerdocio común", "Sacerdocio ministerial", "Celibato", "Voto",
-    "Estado de perfección", "Consejo evangélico", "Pobreza", "Castidad", "Obediencia",
-    "Vida contemplativa", "Vida activa", "Vida mixta", "Oración mental", "Oración vocal",
-    "Meditación", "Contemplación", "Éxtasis", "Unión mística", "Noche oscura",
-    "Ascética", "Mística", "Vía purgativa", "Vía iluminativa", "Vía unitiva",
-    "Virtud", "Vicio", "Hábito", "Pasión", "Afecto",
-    "Prudencia", "Justicia", "Fortaleza", "Templanza", "Fe",
-    "Esperanza", "Caridad", "Dones del Espíritu Santo", "Frutos del Espíritu Santo", "Bienaventuranzas",
-    "Pecado", "Pecado original", "Pecado actual", "Pecado mortal", "Pecado venial",
-    "Concupiscencia", "Tentación", "Ocasión próxima", "Escándalo", "Cooperación al mal",
-    "Justificación", "Santificación", "Mérito", "Indulgencia", "Satisfacción",
-    "Purgatorio", "Limbo", "Infierno", "Cielo", "Visión beatífica",
-    "Resurrección", "Juicio particular", "Juicio universal", "Parusía", "Escatología",
-    "Alma", "Cuerpo", "Espíritu", "Inmortalidad", "Transmigración",
-    "Reencarnación", "Metempsicosis", "Creacionismo", "Traducianismo", "Generacianismo",
-    "Facultades del alma", "Intelecto", "Voluntad", "Memoria", "Imaginación",
-    "Sentidos externos", "Sentidos internos", "Cogitativa", "Estimativa", "Fantasía",
-    "Abstracción", "Intuición", "Razonamiento", "Silogismo", "Inducción",
-    "Deducción", "Analogía", "Equivocidad", "Univocidad", "Trascendentalidad",
-    "Ley eterna", "Ley natural", "Ley positiva", "Ley divina", "Ley humana",
-    "Derecho natural", "Derecho positivo", "Derecho de gentes", "Ius gentium", "Ius civile",
-    "Derecho canónico", "Derecho eclesiástico", "Fuero eclesiástico", "Inmunidad eclesiástica", "Privilegio del fuero",
-    "Simonía", "Nepotismo", "Pluralismo beneficial", "Absentismo", "Regalía",
-    "Diezmo", "Primicia", "Oblación", "Limosna", "Estipendio",
-    "Beneficio eclesiástico", "Prebenda", "Capellanía", "Patronato", "Presentación",
-    "Investidura", "Colación canónica", "Institución canónica", "Posesión canónica", "Resignación",
-    "Permuta", "Traslado", "Renuncia", "Deposición", "Degradación",
-    "Excomunión", "Entredicho", "Suspensión", "Irregularidad", "Censura",
-    "Dispensa", "Privilegio", "Costumbre", "Prescripción", "Epiqueia",
-    "Tolerancia", "Disimulación", "Cooperación", "Resistencia pasiva", "Resistencia activa",
-    "Tiranicidio", "Regicidio", "Magnicidio", "Sedición", "Rebelión",
-    "Revolución", "Golpe de Estado", "Pronunciamiento", "Levantamiento", "Insurrección",
-    "Razón de Estado", "Bien común", "Interés público", "Utilidad pública", "Necesidad pública",
-    "Soberanía", "Majestad", "Potestad", "Autoridad", "Legitimidad",
-    "Legalidad", "Estado de derecho", "Imperio de la ley", "Constitución", "Fuero",
-    "Carta magna", "Ley fundamental", "Constitucionalismo", "Parlamentarismo", "Separación de poderes",
-    "Monarquía", "Aristocracia", "Democracia", "Oligarquía", "Tiranía",
-    "Despotismo", "Absolutismo", "Autoritarismo", "Totalitarismo", "Dictadura",
-    "República", "Federalismo", "Confederación", "Unión personal", "Unión real",
-    "Estado compuesto", "Estado unitario", "Autonomía", "Descentralización", "Desconcentración",
-    "Subsidiariedad", "Solidaridad", "Cooperación", "Lealtad institucional", "Competencia",
-    "Jerarquía normativa", "Reserva de ley", "Potestad reglamentaria", "Decreto-ley", "Ordenanza",
-    "Tratado internacional", "Costumbre internacional", "Ius cogens", "Erga omnes", "Pacta sunt servanda",
-    "Reciprocidad", "Retorsión", "Represalia", "Intervención", "Neutralidad",
-    "Beligerancia", "Casus belli", "Ultimátum", "Declaración de guerra", "Armisticio",
-    "Capitulación", "Tratado de paz", "Reparación de guerra", "Anexión", "Cesión territorial"
-]
+# Lista de 500 conceptos relacionados con la Escuela de Salamanca y temas afines, ordenados alfabéticamente
+CONCEPTOS = sorted([
+    "Absentismo", "Absolutismo", "Abstracción", "Accidente", "Acto",
+    "Alegoría", "Alma", "Analogía", "Analogía del ser", "Anagogía",
+    "Anexión", "Antipapa", "Apropiaciones", "Arbitrismo", "Aristocracia",
+    "Armisticio", "Ascética", "Asiento", "Autoritarismo", "Autoridad",
+    "Autonomía", "Beatificación", "Belleza", "Beneficio eclesiástico", "Bienaventuranzas",
+    "Bien común", "Bula papal", "Calvinismo", "Canonización", "Canon bíblico",
+    "Capitulación", "Capellanía", "Caridad", "Carta magna", "Casus belli",
+    "Casuismo", "Casuística", "Causa", "Causa primera", "Causa segunda",
+    "Celibato", "Censura", "Cesión territorial", "Cielo", "Ciencia media",
+    "Cisma", "Colegio episcopal", "Colación canónica", "Colonización", "Competencia",
+    "Comunión", "Concepción inmaculada", "Conciliarismo", "Concilio", "Concupiscencia",
+    "Confesionalidad", "Confederación", "Confirmación", "Conquista", "Consejo evangélico",
+    "Conservación", "Consubstanciación", "Constitución", "Constitucionalismo", "Contemplación",
+    "Contrarreforma", "Contrato", "Contrato social", "Cooperación", "Cooperación al mal",
+    "Costumbre", "Costumbre internacional", "Creación", "Creacionismo", "Cuerpo",
+    "Declaración de guerra", "Decreto-ley", "Degradación", "Democracia", "Demonología",
+    "Derecho canónico", "Derecho de descubrimiento", "Derecho de gentes", "Derecho de ocupación",
+    "Derecho eclesiástico", "Derecho internacional", "Derecho natural", "Derecho positivo",
+    "Derecho subjetivo", "Desarrollo doctrinal", "Desconcentración", "Descentralización",
+    "Despotismo", "Despotismo ilustrado", "Deuterocanónicos", "Diezmo", "Dignidad humana",
+    "Dispensa", "Disimulación", "Dictadura", "Dominio", "Dominium",
+    "Eclesiología", "Economía", "Efecto", "Encarnación", "Encíclica",
+    "Encomienda", "Entredicho", "Epiqueia", "Equiprobabilismo", "Erga omnes",
+    "Escatología", "Escolástica tardía", "Escotismo", "Escuela de Coímbra", "Escuela de Salamanca",
+    "Escándalo", "Esencia", "Espíritu", "Esperanza", "Estado",
+    "Estado compuesto", "Estado de derecho", "Estado de perfección", "Estado unitario", "Estanco",
+    "Estimativa", "Eucaristía", "Evangelización", "Ex cathedra", "Ex opere operantis",
+    "Ex opere operato", "Excomunión", "Exégesis", "Existencia", "Éxtasis",
+    "Facultades del alma", "Fantasía", "Fe", "Febronianismo", "Federalismo",
+    "Finalidad", "Forma", "Fortaleza", "Frutos del Espíritu Santo", "Fuero",
+    "Fuero eclesiástico", "Futuribles", "Galicanismo", "Generacianismo", "Gobierno divino",
+    "Golpe de Estado", "Gracia", "Guerra justa", "Hábito", "Hacienda",
+    "Herejía", "Hermenéutica", "Hipóstasis", "Humanismo", "Ilustración",
+    "Imperium", "Imperio de la ley", "Inducción", "Indulgencia", "Infalibilidad",
+    "Infalibilidad papal", "Infierno", "Inflación", "Inmortalidad", "Inmunidad eclesiástica",
+    "Inquisición", "Inspiración", "Institución canónica", "Intelecto", "Interés",
+    "Interés público", "Intervención", "Intuición", "Investidura", "Irregularidad",
+    "Ius civile", "Ius cogens", "Ius commercii", "Ius communicationis", "Ius gentium",
+    "Ius migrandi", "Ius naturale", "Ius peregrinandi", "Ius praedicandi", "Jansenismo",
+    "Jerarquía normativa", "Josefinismo", "Juicio particular", "Juicio universal", "Jurisdicción",
+    "Justicia", "Justicia conmutativa", "Justicia distributiva", "Justificación", "Laxismo",
+    "Lealtad institucional", "Legalidad", "Legitimidad", "Ley", "Ley divina",
+    "Ley eterna", "Ley fundamental", "Ley humana", "Ley natural", "Ley positiva",
+    "Liberalismo", "Libertad", "Libertad de conciencia", "Libertad religiosa", "Libre albedrío",
+    "Libre arbitrio", "Libre comercio", "Limbo", "Limosna", "Liturgia",
+    "Magisterio", "Magnicidio", "Majestad", "Materia", "Materia y forma sacramental",
+    "Matrimonio", "Mayorazgo", "Meditación", "Memoria", "Mérito",
+    "Metempsicosis", "Milagro", "Misa", "Misericordia", "Misiones divinas",
+    "Mística", "Mita", "Modernidad", "Molinismo", "Monarquía",
+    "Monopolio", "Monopolio real", "Moral", "Naturaleza", "Naturaleza humana",
+    "Necesidad pública", "Nepotismo", "Neutralidad", "Noche oscura", "Nominalismo",
+    "Obediencia", "Oblación", "Obraje", "Ocasión próxima", "Ockhamismo",
+    "Oferta y demanda", "Oligarquía", "Ontología", "Oración mental", "Oración vocal",
+    "Orden sagrado", "Ordenanza", "Ortodoxia", "Pacta sunt servanda", "Pacto social",
+    "Padres apologistas", "Padres apostólicos", "Padres de la Iglesia", "Papado", "Parlamentarismo",
+    "Parusía", "Pasión", "Patrística", "Patronato", "Patronato regio",
+    "Pecado", "Pecado actual", "Pecado mortal", "Pecado original", "Pecado venial",
+    "Penitencia", "Permuta", "Persona", "Pluralismo beneficial", "Pneumatología",
+    "Pobreza", "Poder civil", "Poder eclesiástico", "Posesión canónica", "Potestad",
+    "Potestad de jurisdicción", "Potestad de magisterio", "Potestad de orden", "Potestad reglamentaria", "Potencia",
+    "Prebenda", "Precio justo", "Predestinación", "Premoción física", "Presencia real",
+    "Presentación", "Primado papal", "Primicia", "Privilegio", "Privilegio del fuero",
+    "Probabiliorismo", "Probabilismo", "Probabilismo moral", "Procesiones divinas", "Profecía",
+    "Pronunciamiento", "Propiedad", "Propiedad privada", "Providencia", "Prudencia",
+    "Purgatorio", "Razonamiento", "Razón", "Razón de Estado", "Realismo exagerado",
+    "Realismo moderado", "Reciprocidad", "Reencarnación", "Reforma protestante", "Regalía",
+    "Regalismo", "Regicidio", "Relaciones subsistentes", "Renuncia", "Repartimiento",
+    "Represalia", "República", "Republicanismo", "Reserva de ley", "Resistencia activa",
+    "Resistencia pasiva", "Resignación", "Resurrección", "Retorsión", "Revelación",
+    "Revolución", "Rigorismo", "Rito", "Rubrica", "Sacramento",
+    "Sacerdocio común", "Sacerdocio ministerial", "Sacrificio eucarístico", "Salario justo", "Salvación",
+    "Santificación", "Satisfacción", "Secularización", "Sedición", "Segunda escolástica",
+    "Sensus fidelium", "Sentidos externos", "Sentidos internos", "Señorío", "Separación de poderes",
+    "Silogismo", "Simonía", "Sínodo", "Soberanía", "Sociedad",
+    "Sociedad civil", "Solidaridad", "Soteriología", "Subsidiariedad", "Subsistencia",
+    "Substancia", "Suarismo", "Suspensión", "Sustancia", "Teleología",
+    "Templanza", "Tentación", "Terra nullius", "Tiranía", "Tiranía de ejercicio",
+    "Tiranía de origen", "Tiranicidio", "Tolerancia", "Tolerancia religiosa", "Tomismo",
+    "Totalitarismo", "Traducianismo", "Tradición", "Transmigración", "Transubstanciación",
+    "Tratado de paz", "Tratado internacional", "Trinidad", "Tropología", "Tuciorismo",
+    "Ultimátum", "Unidad", "Unión hipostática", "Unión mística", "Unión personal",
+    "Unión real", "Universales", "Usura", "Utilidad pública", "Valor",
+    "Valor del trabajo", "Vasallaje", "Verdad", "Vía iluminativa", "Vía purgativa",
+    "Vía unitiva", "Vicariato regio", "Vicio", "Vida activa", "Vida contemplativa",
+    "Vida mixta", "Virtud", "Visión beatífica", "Voluntad", "Voto"
+])
 
 def buscar_informacion(query):
     url = "https://google.serper.dev/search"
@@ -117,24 +119,10 @@ def generar_definicion(concepto, info):
     prompt = f"""Basándote en la siguiente información sobre el concepto '{concepto}' y tu conocimiento sobre la Escuela de Salamanca, 
     genera una definición del concepto desde el punto de vista de al menos 5 autores relevantes de esta escuela. 
     Para cada autor, incluye su nombre, una breve definición o perspectiva sobre el concepto, y si es posible, una cita o referencia específica.
+    Finaliza con una breve síntesis de las diferentes perspectivas.
 
     Información:
     {info}
-
-    Formato de respuesta:
-    Concepto: [concepto]
-
-    1. Autor: [nombre del autor]
-       Definición: [breve definición o perspectiva]
-       Cita/Referencia: [cita o referencia, si está disponible]
-
-    2. Autor: [nombre del autor]
-       Definición: [breve definición o perspectiva]
-       Cita/Referencia: [cita o referencia, si está disponible]
-
-    [Continuar con al menos 3 autores más...]
-
-    Conclusión: [Breve síntesis de las diferentes perspectivas]
     """
     
     data = {
