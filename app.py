@@ -117,7 +117,7 @@ def generar_definicion(concepto, info):
         "Content-Type": "application/json"
     }
     prompt = f"""Basándote en la siguiente información sobre el concepto '{concepto}' y tu conocimiento sobre la Escuela de Salamanca, 
-    genera una definición del concepto desde el punto de vista de al menos 6 autores relevantes de esta escuela. 
+    genera una definición del concepto desde el punto de vista de al menos 10 autores relevantes de esta escuela. 
     Para cada autor, incluye su nombre, una breve definición o perspectiva sobre el concepto, y si es posible, una cita o referencia específica.
     Finaliza con una breve síntesis de las diferentes perspectivas.
 
