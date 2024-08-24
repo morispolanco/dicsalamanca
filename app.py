@@ -128,7 +128,7 @@ def generar_definicion(concepto, info):
     data = {
         "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
         "prompt": prompt,
-        "max_tokens": 1000,
+        "max_tokens": 1900,
         "temperature": 0.7,
     }
     
