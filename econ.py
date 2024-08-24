@@ -55,7 +55,7 @@ def generar_definicion(concepto, info):
         return f"Error en la generación: {response.status_code} - {response.text}"
 
 def main():
-    st.title("500 Conceptos de la Escuela de Salamanca")
+    st.title("99 Conceptos económicos de la Escuela de Salamanca")
     
     # Crear dos columnas con proporción 1:3
     col1, col2 = st.columns([1, 3])
