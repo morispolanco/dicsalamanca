@@ -45,34 +45,49 @@ for grupo, miembros in escuela_salamanca.items():
     with st.sidebar.expander(grupo):
         st.write("\n".join(miembros))
 
+# ... código previo ...
+
 # Botón para generar la definición
 if st.button("Generar Definición"):
     if concepto:
         # Consulta a la API de Serper para buscar información relevante
         serper_response = requests.get(
-            "https://google.serper.dev/search",  # Reemplaza con el endpoint adecuado
+            "https://serper.api/your_endpoint",  # Reemplaza con el endpoint adecuado
             headers={"Authorization": f"Bearer {serper_api_key}"},
             params={"q": concepto, "num_results": 5}
         )
 
         # Procesar la respuesta de Serper
-        serper_data = serper_response.json()
-        definiciones = [item['snippet'] for item in serper_data['results']]
+        if serper_response.status_code == 200:
+            serper_data = serper_response.json()
 
-        # Usar la API de Together para refinar la definición y citar autores de la Escuela de Salamanca
-        prompt = f"Define el concepto '{concepto}' desde el punto de vista de autores de la Escuela de Salamanca y cita fuentes relevantes. Los autores pueden incluir: {', '.join(escuela_salamanca['Primer grupo'])}, {', '.join(escuela_salamanca['Segundo grupo'])}, {', '.join(escuela_salamanca['Tercer grupo'])}."
-        together_response = requests.post(
-            "https://api.together.xyz/v1/chat/completions",  # Reemplaza con el endpoint adecuado
-            headers={"Authorization": f"Bearer {together_api_key}"},
-            json={"prompt": prompt, "temperature": 0.7}
-        )
-
-        # Mostrar la definición generada
-        if together_response.status_code == 200:
-            definicion = together_response.json()["choices"][0]["text"]
-            st.subheader(f"Definición de '{concepto}':")
-            st.write(definicion)
+            # Verificar si 'results' está presente y no está vacío
+            if 'results' in serper_data and serper_data['results']:
+                definiciones = [item['snippet'] for item in serper_data['results']]
+            else:
+                st.warning("No se encontraron resultados relevantes en la búsqueda.")
+                definiciones = []
         else:
-            st.error("Error al generar la definición. Por favor, intenta de nuevo.")
+            st.error("Error al consultar la API de Serper. Por favor, intenta de nuevo.")
+            definiciones = []
+
+        if definiciones:
+            # Usar la API de Together para refinar la definición y citar autores de la Escuela de Salamanca
+            prompt = f"Define el concepto '{concepto}' desde el punto de vista de autores de la Escuela de Salamanca y cita fuentes relevantes. Los autores pueden incluir: {', '.join(escuela_salamanca['Primer grupo'])}, {', '.join(escuela_salamanca['Segundo grupo'])}, {', '.join(escuela_salamanca['Tercer grupo'])}."
+            together_response = requests.post(
+                "https://together.api/your_endpoint",  # Reemplaza con el endpoint adecuado
+                headers={"Authorization": f"Bearer {together_api_key}"},
+                json={"prompt": prompt, "temperature": 0.7}
+            )
+
+            # Mostrar la definición generada
+            if together_response.status_code == 200:
+                definicion = together_response.json()["choices"][0]["text"]
+                st.subheader(f"Definición de '{concepto}':")
+                st.write(definicion)
+            else:
+                st.error("Error al generar la definición. Por favor, intenta de nuevo.")
+        else:
+            st.warning("No se pudo generar una definición debido a la falta de resultados.")
     else:
         st.warning("Por favor, introduce un concepto.")
