@@ -115,6 +115,17 @@ def main():
     col1, col2 = st.columns([1, 3])
     
     with col1:
+        st.subheader("Sobre esta aplicación")
+        st.write("""
+        Esta aplicación te permite explorar 500 conceptos relacionados con la Escuela de Salamanca. Aquí puedes:
+        
+        1. Seleccionar un concepto de la lista predefinida.
+        2. Introducir tu propio concepto personalizado.
+        3. Generar definiciones desde la perspectiva de al menos 10 autores relevantes de la Escuela de Salamanca.
+        
+        La app utiliza IA para buscar información y generar definiciones basadas en el conocimiento de la Escuela de Salamanca.
+        """)
+        
         st.subheader("Lista de Conceptos")
         concepto_seleccionado = st.selectbox("Selecciona un concepto:", CONCEPTOS)
         
