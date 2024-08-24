@@ -9,7 +9,7 @@ TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
 # Configurar el modo ancho por defecto
 st.set_page_config(layout="wide")
 
-# Lista de 500 conceptos relacionados con la Escuela de Salamanca y temas afines, ordenados alfabéticamente
+# Lista de 99 conceptos económicos relacionados con la Escuela de Salamanca y temas afines, ordenados alfabéticamente
 CONCEPTOS = sorted([
     "acción humana", "acción social", "acumulación de riquezas", "agricultura", "alcabalas", "alquiler", "alma", "altruismo", "amor del prójimo", "arbitraje", "arrendamiento", "beneficencia", "beneficio", "bienes", "bienes comunales", "bienes raíces", "bienes tangibles", "capital", "caridad", "circulante", "circulación monetaria", "comercio", "compasión", "comprensión", "confianza", "contrabando", "contrato", "cooperación", "crédito", "deuda", "deuda pública", "dignidad", "dinero", "disciplina", "distribución de riquezas", "equidad", "ética", "excedente", "fiscalización", "fortaleza económica", "ganancia", "gastos", "gremios", "herencia", "honor", "hombres de negocios", "humildad", "igualdad", "impuestos", "inflación", "inversión", "justicia", "latifundio", "liberalidad", "libre mercado", "magnanimidad", "mancomunidad", "mercado", "mercancías", "mercantilismo", "miseria", "misericordia", "moneda", "monopolio", "moral", "moral económica", "pecunia", "precio", "precio justo", "prejuicio", "prestación", "préstamo", "productividad", "proteccionismo", "pueblo", "riquezas", "renta", "santa inquisición", "servicios", "sociedad", "soberanía", "solidaridad", "suma teológica", "superávit", "tenencia", "trabajo", "tributación", "trueque", "usura", "valor", "venta justa", "virtud", "voluntad", "zafra"
 ])
