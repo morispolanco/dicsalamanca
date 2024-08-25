@@ -90,7 +90,8 @@ def generar_definicion(concepto, info):
     prompt = f"""Basándote en la siguiente información sobre el concepto '{concepto}' y tu conocimiento sobre la Escuela de Salamanca, 
     genera una definición del concepto desde el punto de vista de al menos 10 autores relevantes de esta escuela. 
     Para cada autor, incluye su nombre, una breve definición o perspectiva sobre el concepto, y si es posible, una cita textual.
-    Si pones una cita textual, la referencia debe incluir el título de la obra, el editor y la página. Si no puedes aportar una cita, no la generes (no la inventes). 
+    Si proporcionas una cita textual, ponla entre comillas y da el título de la obra, el editor y la página. 
+    Si no puedes aportar una cita, no la generes (no la inventes). 
     Finaliza con una síntesis de las diferentes perspectivas, a la manera de entrada de diccionario.
 
     Información:
