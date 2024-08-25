@@ -2,6 +2,12 @@ import streamlit as st
 import requests
 import json
 
+# Configuración de la página
+st.set_page_config(page_title="Diccionario de la Escuela de Salamanca")
+
+# Título de la aplicación
+st.title("Diccionario de la Escuela de Salamanca")
+
 # Configuración de secretos
 SERPER_API_KEY = st.secrets["SERPER_API_KEY"]
 TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
