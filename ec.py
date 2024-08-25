@@ -3,7 +3,6 @@ import requests
 import json
 from docx import Document
 from io import BytesIO
-import random
 
 # Configuración de la página
 st.set_page_config(page_title="Diccionario Económico - Escuela de Salamanca", page_icon="📚")
@@ -113,12 +112,13 @@ if opcion == "Elegir de la lista":
 else:
     termino = st.text_input("Ingresa tu propio término económico:")
 
-num_autores = st.slider("Número de autores a consultar", min_value=1, max_value=5, value=3)
+# Selección de autores
+st.write("Selecciona uno o más autores de la Escuela de Salamanca:")
+autores_seleccionados = st.multiselect("Autores", autores_salamanca)
 
 if st.button("Obtener definición"):
-    if termino:
+    if termino and autores_seleccionados:
         with st.spinner("Buscando información y generando definiciones..."):
-            autores_seleccionados = random.sample(autores_salamanca, num_autores)
             definiciones = {}
             todas_fuentes = []
 
@@ -162,8 +162,10 @@ if st.button("Obtener definición"):
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
 
-    else:
+    elif not termino:
         st.warning("Por favor, selecciona o ingresa un término.")
+    elif not autores_seleccionados:
+        st.warning("Por favor, selecciona al menos un autor.")
 
 # Agregar información en el pie de página
 st.markdown("---")
