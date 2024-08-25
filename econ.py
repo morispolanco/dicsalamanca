@@ -1,95 +1,114 @@
 import streamlit as st
 import requests
 import json
+from docx import Document
+from docx.shared import Inches
+from io import BytesIO
 
-# Configuración de secretos
-SERPER_API_KEY = st.secrets["SERPER_API_KEY"]
+# Configuración de la página
+st.set_page_config(page_title="Asistente de Economía - Escuela de Salamanca", page_icon="📚")
+
+# Título de la aplicación
+st.title("Asistente de Economía - Escuela de Salamanca")
+
+# Acceder a las claves de API de los secretos de Streamlit
 TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
-
-# Configurar el modo ancho por defecto
-st.set_page_config(layout="wide")
-
-# Lista de 99 conceptos económicos relacionados con la Escuela de Salamanca y temas afines, ordenados alfabéticamente
-CONCEPTOS = sorted([
-    "acción humana", "acción social", "acumulación de riquezas", "agricultura", "alcabalas", "alquiler", "alma", "altruismo", "amor del prójimo", "arbitraje", "arrendamiento", "beneficencia", "beneficio", "bienes", "bienes comunales", "bienes raíces", "bienes tangibles", "capital", "caridad", "circulante", "circulación monetaria", "comercio", "compasión", "comprensión", "confianza", "contrabando", "contrato", "cooperación", "crédito", "deuda", "deuda pública", "dignidad", "dinero", "disciplina", "distribución de riquezas", "equidad", "ética", "excedente", "fiscalización", "fortaleza económica", "ganancia", "gastos", "gremios", "herencia", "honor", "hombres de negocios", "humildad", "igualdad", "impuestos", "inflación", "inversión", "justicia", "latifundio", "liberalidad", "libre mercado", "magnanimidad", "mancomunidad", "mercado", "mercancías", "mercantilismo", "miseria", "misericordia", "moneda", "monopolio", "moral", "moral económica", "pecunia", "precio", "precio justo", "prejuicio", "prestación", "préstamo", "productividad", "proteccionismo", "pueblo", "riquezas", "renta", "santa inquisición", "servicios", "sociedad", "soberanía", "solidaridad", "suma teológica", "superávit", "tenencia", "trabajo", "tributación", "trueque", "usura", "valor", "venta justa", "virtud", "voluntad", "zafra"
-])
+SERPER_API_KEY = st.secrets["SERPER_API_KEY"]
 
 def buscar_informacion(query):
     url = "https://google.serper.dev/search"
     payload = json.dumps({
-        "q": query
+        "q": query + " Escuela de Salamanca economía"
     })
     headers = {
         'X-API-KEY': SERPER_API_KEY,
         'Content-Type': 'application/json'
     }
-    response = requests.post(url, headers=headers, data=payload)
+    response = requests.request("POST", url, headers=headers, data=payload)
     return response.json()
 
-def generar_definicion(concepto, info):
+def generar_respuesta(prompt, contexto):
     url = "https://api.together.xyz/inference"
-    headers = {
-        "Authorization": f"Bearer {TOGETHER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-    prompt = f"""Genera una entrada de diccionario a partir del concepto solicitado. Incluye citas textuales o directas de al menos 10 autores de la Escuela de Salamanca. 
-    Si es posible, incluye enlace a la obra citada. Si no, incluye el título, el editor y la página de donde obtienes la cita. 
-    Si no puedes poner una cita textual, haz una paráfrasis, pero no inventes la cita.
-
-    Información:
-    {info}
-    """
-    
-    data = {
+    payload = json.dumps({
         "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "prompt": prompt,
-        "max_tokens": 2200,
+        "prompt": f"Contexto: {contexto}\n\nPregunta: {prompt}\n\nResponde la pregunta basándote en el contexto proporcionado y tu conocimiento sobre los conceptos económicos según la Escuela de Salamanca. Incluye referencias a obras específicas de los autores de esta escuela cuando sea posible.\n\nRespuesta:",
+        "max_tokens": 5512,
         "temperature": 0.7,
+        "top_p": 0.7,
+        "top_k": 50,
+        "repetition_penalty": 1,
+        "stop": ["Pregunta:"]
+    })
+    headers = {
+        'Authorization': f'Bearer {TOGETHER_API_KEY}',
+        'Content-Type': 'application/json'
     }
-    
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        return response.json()['output']['choices'][0]['text'].strip()
+    response = requests.request("POST", url, headers=headers, data=payload)
+    return response.json()['output']['choices'][0]['text'].strip()
+
+def create_docx(pregunta, respuesta, fuentes):
+    doc = Document()
+    doc.add_heading('Asistente de Economía - Escuela de Salamanca', 0)
+
+    doc.add_heading('Pregunta', level=1)
+    doc.add_paragraph(pregunta)
+
+    doc.add_heading('Respuesta', level=1)
+    doc.add_paragraph(respuesta)
+
+    doc.add_heading('Fuentes', level=1)
+    for fuente in fuentes:
+        doc.add_paragraph(fuente, style='List Bullet')
+
+    doc.add_paragraph('\nNota: Este documento fue generado por un asistente de IA. Verifica la información con fuentes académicas para un análisis más profundo.')
+
+    return doc
+
+# Interfaz de usuario
+pregunta = st.text_input("Ingresa tu pregunta sobre conceptos económicos según la Escuela de Salamanca:")
+
+if st.button("Obtener respuesta"):
+    if pregunta:
+        with st.spinner("Buscando información y generando respuesta..."):
+            # Buscar información relevante
+            resultados_busqueda = buscar_informacion(pregunta)
+            contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda.get('organic', [])])
+
+            # Generar respuesta
+            respuesta = generar_respuesta(pregunta, contexto)
+
+            # Mostrar respuesta
+            st.write("Respuesta:")
+            st.write(respuesta)
+
+            # Mostrar fuentes
+            st.write("Fuentes:")
+            fuentes = []
+            for resultado in resultados_busqueda.get('organic', [])[:3]:
+                fuente = f"{resultado['title']}: {resultado['link']}"
+                st.write(f"- [{resultado['title']}]({resultado['link']})")
+                fuentes.append(fuente)
+
+            # Crear documento DOCX
+            doc = create_docx(pregunta, respuesta, fuentes)
+
+            # Guardar el documento DOCX en memoria
+            docx_file = BytesIO()
+            doc.save(docx_file)
+            docx_file.seek(0)
+
+            # Opción para exportar a DOCX
+            st.download_button(
+                label="Descargar resultados como DOCX",
+                data=docx_file,
+                file_name="respuesta_economia_salamanca.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
     else:
-        return f"Error en la generación: {response.status_code} - {response.text}"
+        st.warning("Por favor, ingresa una pregunta.")
 
-def main():
-    st.title("99 Conceptos económicos de la Escuela de Salamanca")
-    
-    # Crear dos columnas con proporción 1:3
-    col1, col2 = st.columns([1, 3])
-    
-    with col1:
-        st.subheader("Lista de Conceptos")
-        concepto_seleccionado = st.selectbox("Selecciona un concepto:", CONCEPTOS)
-        
-        st.subheader("O introduce tu propio concepto:")
-        concepto_personalizado = st.text_input("Concepto personalizado:")
-    
-    with col2:
-        st.subheader("Definiciones del Concepto")
-        
-        # Determinar qué concepto usar
-        concepto_final = concepto_personalizado if concepto_personalizado else concepto_seleccionado
-        
-        if st.button("Generar Definiciones"):
-            if concepto_final:
-                with st.spinner("Buscando información y generando definiciones..."):
-                    # Buscar información
-                    info = buscar_informacion(f"{concepto_final} Escuela de Salamanca")
-                    
-                    # Extraer texto relevante de los resultados de búsqueda
-                    texto_relevante = ""
-                    for resultado in info.get('organic', [])[:5]:
-                        texto_relevante += resultado.get('snippet', '') + " "
-                    
-                    # Generar definiciones
-                    definiciones = generar_definicion(concepto_final, texto_relevante)
-                    
-                    # Mostrar resultado
-                    st.markdown(definiciones)
-            else:
-                st.warning("Por favor, selecciona un concepto o introduce uno personalizado.")
-
-if __name__ == "__main__":
-    main()
+# Agregar información en el pie de página
+st.markdown("---")
+st.markdown("**Nota:** Este asistente utiliza IA para generar respuestas basadas en información disponible en línea sobre la Escuela de Salamanca. "
+            "Siempre verifica la información con fuentes académicas para un análisis más profundo de los conceptos económicos.")
