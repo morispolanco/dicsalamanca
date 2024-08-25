@@ -118,13 +118,14 @@ def main():
             <style>
             .sidebar {
                 background-color: white;
-                padding: 20px;
+                padding: 0px;  /* Eliminar el padding */
                 border-radius: 10px;
                 color: gray;
                 box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             }
             .sidebar h2 {
                 color: gray;
+                margin: 0px;  /* Eliminar el margen */
             }
             .header {
                 background-color: gray;
@@ -133,7 +134,7 @@ def main():
                 text-align: center;
                 color: white;
                 font-size: 24px;
-                margin-bottom: 20px;
+                margin-bottom: 0px;  /* Eliminar margen inferior */
             }
             </style>
             """,
