@@ -32,10 +32,9 @@ def generar_definicion(concepto, info):
         "Authorization": f"Bearer {TOGETHER_API_KEY}",
         "Content-Type": "application/json"
     }
-    prompt = f"""Basándote en la siguiente información sobre el concepto '{concepto}' y tu conocimiento sobre la Escuela de Salamanca, 
-    genera una definición del concepto desde el punto de vista de al menos 10 autores relevantes de esta escuela. 
-    Para cada autor, incluye su nombre, una breve definición o perspectiva sobre el concepto, y si es posible, una cita o referencia específica.
-    Finaliza con una breve síntesis de las diferentes perspectivas.
+    prompt = f"""Genera una entrada de diccionario a partir del concepto solicitado. Incluye citas textuales o directas de al menos 10 autores de la Escuela de Salamanca. 
+    Si es posible, incluye enlace a la obra citada. Si no, incluye el título, el editor y la página de donde obtienes la cita. 
+    Si no puedes poner una cita textual, haz una paráfrasis, pero no inventes la cita.
 
     Información:
     {info}
