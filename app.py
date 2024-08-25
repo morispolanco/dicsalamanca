@@ -91,7 +91,9 @@ def generar_definicion(concepto, info):
     genera una definición del concepto desde el punto de vista de al menos 10 autores relevantes de esta escuela. 
     Para cada autor, incluye su nombre, una breve definición o perspectiva sobre el concepto, y si es posible, una cita textual.
     Si proporcionas una cita textual, ponla entre comillas y da el título, el editor, la ciudad y la página o páginas de donde la sacaste. 
-    Si no puedes aportar una cita textual, no la generes (no la inventes). 
+    Si no puedes aportar una cita textual, no la generes (no la inventes). Ejemplos: Juan de Medina: 
+    "El precio justo se fija por la autoridad pública mediante ley o decreto público" (De iustitia et iure, lib. VI, Salamanca, 1546, p. 67).
+    Luis de Molina: El precio justo es aquel que resulta de la libre interacción entre oferta y demanda en el mercado, siempre que no haya monopolio ni fraude.
     Finaliza con una síntesis de las diferentes perspectivas, a la manera de entrada de diccionario.
 
     Información:
