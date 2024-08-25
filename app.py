@@ -169,8 +169,11 @@ def main():
                     # Generar definiciones
                     definiciones = generar_definicion(concepto_final, texto_relevante)
                     
-                    # Mostrar resultado
-                    st.markdown(definiciones)
+                    # Separar las citas por párrafos y mostrar resultado
+                    definiciones_por_parrafos = definiciones.split('\n\n')
+                    for parrafo in definiciones_por_parrafos:
+                        st.markdown(parrafo)
+                        st.markdown("")  # Esto añade una línea en blanco entre párrafos
             else:
                 st.warning("Por favor, selecciona un concepto o introduce uno personalizado.")
     
