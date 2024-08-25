@@ -117,10 +117,11 @@ def main():
             """
             <style>
             .sidebar {
-                background-color: #f0f0f0;
+                background-color: white;
                 padding: 20px;
                 border-radius: 10px;
                 color: gray;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             }
             .sidebar h2 {
                 color: gray;
