@@ -125,13 +125,24 @@ def main():
             .sidebar h2 {
                 color: gray;
             }
+            .header {
+                background-color: gray;
+                padding: 10px;
+                border-radius: 10px;
+                text-align: center;
+                color: white;
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
             </style>
             """,
             unsafe_allow_html=True
         )
         
+        # Mover el título a la franja gris
+        st.markdown('<div class="header">Sobre esta aplicación</div>', unsafe_allow_html=True)
+        
         st.markdown('<div class="sidebar">', unsafe_allow_html=True)
-        st.subheader("Sobre esta aplicación")
         st.write("""
         Esta aplicación te permite explorar 500 conceptos relacionados con la Escuela de Salamanca.
         
