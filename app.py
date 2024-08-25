@@ -124,25 +124,16 @@ def main():
                 box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
             }
             .sidebar h2 {
-                color: gray;
+                color: black;
                 margin: 0px;  /* Eliminar el margen */
-            }
-            .header {
-                background-color: gray;
-                padding: 10px;
-                border-radius: 10px;
-                text-align: center;
-                color: white;
-                font-size: 24px;
-                margin-bottom: 0px;  /* Eliminar margen inferior */
             }
             </style>
             """,
             unsafe_allow_html=True
         )
         
-        # Mover el título a la franja gris
-        st.markdown('<div class="header">Sobre esta aplicación</div>', unsafe_allow_html=True)
+        # Título "Sobre esta aplicación" en estilo normal
+        st.subheader("Sobre esta aplicación")
         
         st.markdown('<div class="sidebar">', unsafe_allow_html=True)
         st.write("""
