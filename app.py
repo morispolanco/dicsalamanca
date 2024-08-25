@@ -61,11 +61,11 @@ CONCEPTOS = sorted([
     "purificación", "purgatorio", "pureza", "realismo moral", "recaudación fiscal", "reconciliación", "reforma", 
     "regeneración", "reglas comerciales", "regulación", "remordimiento", "rendición de cuentas", "reparación", 
     "resarcimiento", "responsabilidad", "responsabilidad jurídica", "restricción moral", "reto moral", "salario", 
-    "salvación", "santidad", "sindéresis", "sinergia", "sinceridad", "soberanía", "sociedad", "solidaridad", "sueños", 
-    "supererogación", "superioridad", "suplencia", "suposiciones morales", "susceptibilidad ética", "taxonomía moral", 
-    "teología moral", "tiempo", "tolerancia", "tradición", "transacción", "trascendencia", "tribunal", "unidad", "usura", 
-    "utilitarismo", "valor", "valor de uso", "valor económico", "valor justo", "valor moral", "valores", "venta", 
-    "veracidad", "verdad", "vergüenza", "virtud", "vocación", "voluntad", "voto"
+    "salvación", "santidad", "sindéresis", "sinergia", "sistema económico", "soberanía", "solidaridad", "soporte moral", 
+    "suavidad moral", "subsidios", "sufragio", "superación moral", "supervisión", "sustancia moral", "templanza", 
+    "tentación", "testimonio", "tiranía", "tolerancia", "trabajo", "tradición", "transacciones comerciales", "transparencia", 
+    "trascendencia", "tributación", "unidad", "universales morales", "utilidad", "utilitarismo", "valor", "valores morales", 
+    "verdad", "verosimilitud", "virtud", "virtud económica", "voluntad", "voluntariado", "voluntarismo", "voto", "xenofobia"
 ])
 
 def buscar_informacion(query):
@@ -120,6 +120,10 @@ def main():
                 background-color: #f0f0f0;
                 padding: 20px;
                 border-radius: 10px;
+                color: gray;
+            }
+            .sidebar h2 {
+                color: gray;
             }
             </style>
             """,
@@ -132,6 +136,9 @@ def main():
         Esta aplicación te permite explorar 500 conceptos relacionados con la Escuela de Salamanca.
         
         Selecciona un concepto de la lista o introduce uno personalizado para generar definiciones desde la perspectiva de autores relevantes de la Escuela de Salamanca.
+        
+        **Autor**: Moris Polanco  
+        **Año**: 2024
         """)
         st.markdown('</div>', unsafe_allow_html=True)
     
