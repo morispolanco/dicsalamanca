@@ -109,31 +109,39 @@ def generar_definicion(concepto, info):
         return f"Error en la generación: {response.status_code} - {response.text}"
 
 def main():
+    # Título centrado en la página completa
     st.title("500 Conceptos de la Escuela de Salamanca")
     
-    # Crear dos columnas con proporción 1:3
-    col1, col2 = st.columns([1, 3])
+    # Crear tres columnas con proporción 1:2:1
+    col1, col2, col3 = st.columns([1, 2, 1])
     
     with col1:
+        st.markdown(
+            """
+            <style>
+            .sidebar {
+                background-color: #f0f0f0;
+                padding: 20px;
+                border-radius: 10px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        st.markdown('<div class="sidebar">', unsafe_allow_html=True)
         st.subheader("Sobre esta aplicación")
         st.write("""
-        Esta aplicación te permite explorar 500 conceptos relacionados con la Escuela de Salamanca. Aquí puedes:
-        
-        1. Seleccionar un concepto de la lista predefinida.
-        2. Introducir tu propio concepto personalizado.
-        3. Generar definiciones desde la perspectiva de al menos 10 autores relevantes de la Escuela de Salamanca.
-        
-        La app utiliza IA para buscar información y generar definiciones basadas en el conocimiento de la Escuela de Salamanca.
+        Esta aplicación te permite explorar 500 conceptos relacionados con la Escuela de Salamanca.
         """)
-        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col2:
         st.subheader("Lista de Conceptos")
         concepto_seleccionado = st.selectbox("Selecciona un concepto:", CONCEPTOS)
         
         st.subheader("O introduce tu propio concepto:")
         concepto_personalizado = st.text_input("Concepto personalizado:")
-    
-    with col2:
-        st.subheader("Definiciones del Concepto")
         
         # Determinar qué concepto usar
         concepto_final = concepto_personalizado if concepto_personalizado else concepto_seleccionado
@@ -156,6 +164,8 @@ def main():
                     st.markdown(definiciones)
             else:
                 st.warning("Por favor, selecciona un concepto o introduce uno personalizado.")
+    
+    # La tercera columna se deja vacía para mantener el diseño centrado
 
 if __name__ == "__main__":
     main()
