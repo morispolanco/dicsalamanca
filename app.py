@@ -109,9 +109,6 @@ def generar_definicion(concepto, info):
         return f"Error en la generación: {response.status_code} - {response.text}"
 
 def main():
-    # Título centrado en la página completa
-    st.title("500 Conceptos de la Escuela de Salamanca")
-    
     # Crear tres columnas con proporción 1:2:1
     col1, col2, col3 = st.columns([1, 2, 1])
     
@@ -133,10 +130,15 @@ def main():
         st.subheader("Sobre esta aplicación")
         st.write("""
         Esta aplicación te permite explorar 500 conceptos relacionados con la Escuela de Salamanca.
+        
+        Selecciona un concepto de la lista o introduce uno personalizado para generar definiciones desde la perspectiva de autores relevantes de la Escuela de Salamanca.
         """)
         st.markdown('</div>', unsafe_allow_html=True)
     
     with col2:
+        # Título principal solo en la columna central
+        st.title("500 Conceptos de la Escuela de Salamanca")
+        
         st.subheader("Lista de Conceptos")
         concepto_seleccionado = st.selectbox("Selecciona un concepto:", CONCEPTOS)
         
