@@ -3,6 +3,7 @@ import requests
 import json
 from docx import Document
 from io import BytesIO
+import random
 
 # Configuración de la página
 st.set_page_config(page_title="Diccionario Económico - Escuela de Salamanca", page_icon="📚")
@@ -35,10 +36,27 @@ terminos_economicos = [
     "Tributación", "Trueque", "Usura", "Valor subjetivo", "Violencia económica"
 ]
 
-def buscar_informacion(query):
+# Lista de autores de la Escuela de Salamanca
+autores_salamanca = [
+    "Arias Piñel", "Antonio de Padilla y Meneses", "Bartolomé de Albornoz", "Bartolomé de Medina",
+    "Diego de Chaves", "Diego de Covarrubias", "Diego Pérez de Mesa", "Domingo Báñez", "Domingo de Soto",
+    "Fernán Pérez de Oliva", "Francisco de Vitoria", "Francisco Sarmiento de Mendoza", "Francisco Suárez",
+    "Gregorio de Valencia", "Jerónimo Muñoz", "Juan de Horozco y Covarrubias", "Juan de la Peña",
+    "Juan de Matienzo", "Juan de Ribera", "Juan Gil de la Nava", "Leonardus Lessius", "Luis de León",
+    "Martín de Azpilcueta", "Martín de Ledesma", "Melchor Cano", "Pedro de Sotomayor", "Tomás de Mercado",
+    "Alonso de la Vera Cruz", "Cristóbal de Villalón", "Fernando Vázquez de Menchaca",
+    "Francisco Cervantes de Salazar", "Juan de Lugo y Quiroga", "Juan de Salas", "Luis de Molina",
+    "Pedro de Aragón", "Pedro de Valencia", "Antonio de Hervías", "Bartolomé de Carranza",
+    "Bartolomé de las Casas", "Cristóbal de Fonseca", "Domingo de Salazar", "Domingo de Santo Tomás",
+    "Gabriel Vásquez", "Gómez Pereira", "Juan de Mariana", "Juan de Medina", "Juan Pérez de Menacho",
+    "Luis de Alcalá", "Luis Saravia de la Calle", "Miguel Bartolomé Salón", "Pedro de Fonseca",
+    "Pedro de Oñate", "Rodrigo de Arriaga"
+]
+
+def buscar_informacion(query, autor):
     url = "https://google.serper.dev/search"
     payload = json.dumps({
-        "q": query + " Escuela de Salamanca economía"
+        "q": f"{query} {autor} Escuela de Salamanca economía"
     })
     headers = {
         'X-API-KEY': SERPER_API_KEY,
@@ -47,11 +65,11 @@ def buscar_informacion(query):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.json()
 
-def generar_definicion(termino, contexto):
+def generar_definicion(termino, autor, contexto):
     url = "https://api.together.xyz/inference"
     payload = json.dumps({
         "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "prompt": f"Contexto: {contexto}\n\nTérmino: {termino}\n\nProporciona una definición del término económico '{termino}' según el pensamiento de los autores de la Escuela de Salamanca. La definición debe ser concisa pero informativa, similar a una entrada de diccionario. Incluye, si es posible, una referencia a una obra específica de un autor de la Escuela de Salamanca que trate este concepto.\n\nDefinición:",
+        "prompt": f"Contexto: {contexto}\n\nTérmino: {termino}\nAutor: {autor}\n\nProporciona una definición del término económico '{termino}' según el pensamiento de {autor}, un autor de la Escuela de Salamanca. La definición debe ser concisa pero informativa, similar a una entrada de diccionario. Si es posible, incluye una referencia a una obra específica de {autor} que trate este concepto.\n\nDefinición:",
         "max_tokens": 2048,
         "temperature": 0.7,
         "top_p": 0.7,
@@ -66,15 +84,16 @@ def generar_definicion(termino, contexto):
     response = requests.request("POST", url, headers=headers, data=payload)
     return response.json()['output']['choices'][0]['text'].strip()
 
-def create_docx(termino, definicion, fuentes):
+def create_docx(termino, definiciones, fuentes):
     doc = Document()
     doc.add_heading('Diccionario Económico - Escuela de Salamanca', 0)
 
     doc.add_heading('Término', level=1)
     doc.add_paragraph(termino)
 
-    doc.add_heading('Definición', level=1)
-    doc.add_paragraph(definicion)
+    for autor, definicion in definiciones.items():
+        doc.add_heading(f'Definición según {autor}', level=2)
+        doc.add_paragraph(definicion)
 
     doc.add_heading('Fuentes', level=1)
     for fuente in fuentes:
@@ -94,30 +113,41 @@ if opcion == "Elegir de la lista":
 else:
     termino = st.text_input("Ingresa tu propio término económico:")
 
+num_autores = st.slider("Número de autores a consultar", min_value=1, max_value=5, value=3)
+
 if st.button("Obtener definición"):
     if termino:
-        with st.spinner("Buscando información y generando definición..."):
-            # Buscar información relevante
-            resultados_busqueda = buscar_informacion(termino)
-            contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda.get('organic', [])])
+        with st.spinner("Buscando información y generando definiciones..."):
+            autores_seleccionados = random.sample(autores_salamanca, num_autores)
+            definiciones = {}
+            todas_fuentes = []
 
-            # Generar definición
-            definicion = generar_definicion(termino, contexto)
+            for autor in autores_seleccionados:
+                # Buscar información relevante
+                resultados_busqueda = buscar_informacion(termino, autor)
+                contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda.get('organic', [])])
 
-            # Mostrar definición
-            st.write("Definición:")
-            st.write(definicion)
+                # Generar definición
+                definicion = generar_definicion(termino, autor, contexto)
+                definiciones[autor] = definicion
+
+                # Recopilar fuentes
+                fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('organic', [])[:3]]
+                todas_fuentes.extend(fuentes)
+
+            # Mostrar definiciones
+            st.write(f"Definiciones de '{termino}':")
+            for autor, definicion in definiciones.items():
+                st.write(f"\nSegún {autor}:")
+                st.write(definicion)
 
             # Mostrar fuentes
-            st.write("Fuentes:")
-            fuentes = []
-            for resultado in resultados_busqueda.get('organic', [])[:3]:
-                fuente = f"{resultado['title']}: {resultado['link']}"
-                st.write(f"- [{resultado['title']}]({resultado['link']})")
-                fuentes.append(fuente)
+            st.write("\nFuentes:")
+            for fuente in todas_fuentes:
+                st.write(f"- {fuente}")
 
             # Crear documento DOCX
-            doc = create_docx(termino, definicion, fuentes)
+            doc = create_docx(termino, definiciones, todas_fuentes)
 
             # Guardar el documento DOCX en memoria
             docx_file = BytesIO()
@@ -126,9 +156,9 @@ if st.button("Obtener definición"):
 
             # Opción para exportar a DOCX
             st.download_button(
-                label="Descargar definición como DOCX",
+                label="Descargar definiciones como DOCX",
                 data=docx_file,
-                file_name=f"definicion_{termino.lower().replace(' ', '_')}.docx",
+                file_name=f"definiciones_{termino.lower().replace(' ', '_')}.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
 
