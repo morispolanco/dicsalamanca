@@ -10,11 +10,11 @@ st.set_page_config(page_title="Diccionario Económico - Escuela de Salamanca", p
 # Función para crear la columna de información
 def crear_columna_info():
     st.markdown("""
-    # Sobre esta aplicación
+    ## Sobre esta aplicación
 
     Esta aplicación es un Diccionario Económico basado en el pensamiento de la Escuela de Salamanca. Permite a los usuarios obtener definiciones de términos económicos según la interpretación de diversos autores de esta escuela.
 
-    ## Cómo usar la aplicación:
+    ### Cómo usar la aplicación:
 
     1. Elija un término económico de la lista predefinida o proponga su propio término.
     2. Seleccione uno o más autores de la Escuela de Salamanca.
@@ -22,10 +22,10 @@ def crear_columna_info():
     4. Lea las definiciones y fuentes proporcionadas.
     5. Si lo desea, descargue un documento DOCX con toda la información.
 
-    ## Autor y Año:
+    ### Autor y Año:
     **Moris Polanco**, 2024
 
-    ## Cómo citar esta aplicación (formato APA):
+    #3# Cómo citar esta aplicación (formato APA):
     Polanco, M. (2024). *Diccionario Económico - Escuela de Salamanca* [Aplicación web]. https://url-de-la-aplicacion.com
 
     ---
