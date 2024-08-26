@@ -22,8 +22,8 @@ def crear_columna_info():
     4. Lea las definiciones y fuentes proporcionadas.
     5. Si lo desea, descargue un documento DOCX con toda la información.
 
-    ### Autor y Año:
-    **Moris Polanco**, 2024
+    ### Autor y actualización:
+    **Moris Polanco**, 25 Ag 2024
 
     ### Cómo citar esta aplicación (formato APA):
     Polanco, M. (2024). *Diccionario Económico de la Escuela de Salamanca* [Aplicación web]. https://ecsalamanca.streamlit.app
