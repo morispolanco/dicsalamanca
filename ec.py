@@ -5,7 +5,7 @@ from docx import Document
 from io import BytesIO
 
 # Configuración de la página
-st.set_page_config(page_title="Diccionario Económico de la Escuela de Salamanca", page_icon="📚", layout="wide")
+st.set_page_config(page_title="Diccionario Económico - Escuela de Salamanca", page_icon="📚", layout="wide")
 
 # Función para crear la columna de información
 def crear_columna_info():
@@ -22,7 +22,7 @@ def crear_columna_info():
     4. Lea las definiciones y fuentes proporcionadas.
     5. Si lo desea, descargue un documento DOCX con toda la información.
 
-    ### Autor y actualización:
+    ### Autor y acualización:
     **Moris Polanco**, 25 Ag 2024
 
     ### Cómo citar esta aplicación (formato APA):
@@ -96,7 +96,11 @@ with col2:
             'Content-Type': 'application/json'
         }
         response = requests.request("POST", url, headers=headers, data=payload)
-        return response.json()
+        resultados = response.json()
+
+        # Filtrar resultados para incluir solo enlaces de Google Scholar
+        articulos_scholar = [result for result in resultados.get('organic', []) if "scholar.google.com" in result.get('link', '')]
+        return articulos_scholar
 
     def generar_definicion(termino, autor, contexto):
         url = "https://api.together.xyz/inference"
@@ -117,9 +121,14 @@ with col2:
         response = requests.request("POST", url, headers=headers, data=payload)
         return response.json()['output']['choices'][0]['text'].strip()
 
+    def obtener_fuentes(resultados_busqueda):
+        # Recopilar solo fuentes de Google Scholar
+        fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda]
+        return fuentes
+
     def create_docx(termino, definiciones, fuentes):
         doc = Document()
-        doc.add_heading('Diccionario Económico - Escuela de Salamanca', 0)
+        doc.add_heading('Diccionario Económico de la Escuela de Salamanca', 0)
 
         doc.add_heading('Término', level=1)
         doc.add_paragraph(termino)
@@ -132,74 +141,67 @@ with col2:
         for fuente in fuentes:
             doc.add_paragraph(fuente, style='List Bullet')
 
-        doc.add_paragraph('\nNota: Este documento fue generado por un asistente de IA. Verifica la información con fuentes académicas para un análisis más profundo.')
+        doc.add_paragraph('\nNota: Este documento fue generado por un asistente de IA. Verifique siempre la información con fuentes adicionales.')
 
         return doc
 
-    # Interfaz de usuario
-    st.write("Elige un término económico de la lista o propón tu propio término:")
+    # Selección de términos económicos
+    termino = st.selectbox("Selecciona un término económico", options=terminos_economicos)
 
-    opcion = st.radio("", ["Elegir de la lista", "Proponer mi propio término"])
+    # Campo para ingresar un término económico
+    termino_personalizado = st.text_input("O ingresa un término económico")
 
-    if opcion == "Elegir de la lista":
-        termino = st.selectbox("Selecciona un término:", terminos_economicos)
-    else:
-        termino = st.text_input("Ingresa tu propio término económico:")
+    if termino_personalizado:
+        termino = termino_personalizado
 
-    # Selección de autores
-    st.write("Selecciona uno o más autores de la Escuela de Salamanca (máximo 5):")
-    autores_seleccionados = st.multiselect("Autores", autores_salamanca)
+    # Selección de autores de la Escuela de Salamanca
+    autores_seleccionados = st.multiselect("Selecciona autores de la Escuela de Salamanca", options=autores_salamanca)
 
-    if len(autores_seleccionados) > 5:
-        st.warning("Has seleccionado más de 5 autores. Por favor, selecciona un máximo de 5.")
-    else:
-        if st.button("Obtener definición"):
-            if termino and autores_seleccionados:
-                with st.spinner("Buscando información y generando definiciones..."):
-                    definiciones = {}
-                    todas_fuentes = []
+    # Botón para generar definiciones
+    if st.button("Obtener definición"):
+        if termino and autores_seleccionados:
+            with st.spinner("Buscando información y generando definiciones..."):
+                definiciones = {}
+                todas_fuentes = []
 
-                    for autor in autores_seleccionados:
-                        # Buscar información relevante
-                        resultados_busqueda = buscar_informacion(termino, autor)
-                        contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda.get('organic', [])])
+                for autor in autores_seleccionados:
+                    # Buscar información relevante solo en Google Scholar
+                    resultados_busqueda = buscar_informacion(termino, autor)
+                    contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda])
 
-                        # Generar definición
-                        definicion = generar_definicion(termino, autor, contexto)
-                        definiciones[autor] = definicion
+                    # Generar definición
+                    definicion = generar_definicion(termino, autor, contexto)
+                    definiciones[autor] = definicion
 
-                        # Recopilar fuentes
-                        fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('organic', [])[:3]]
-                        todas_fuentes.extend(fuentes)
+                    # Recopilar fuentes solo de Google Scholar
+                    fuentes = obtener_fuentes(resultados_busqueda)
+                    todas_fuentes.extend(fuentes)
 
-                    # Mostrar definiciones
-                    st.write(f"Definiciones de '{termino}':")
-                    for autor, definicion in definiciones.items():
-                        st.write(f"\nSegún {autor}:")
-                        st.write(definicion)
+                # Mostrar definiciones
+                st.write(f"Definiciones de '{termino}':")
+                for autor, definicion in definiciones.items():
+                    st.write(f"\nSegún {autor}:")
+                    st.write(definicion)
 
-                    # Mostrar fuentes
-                    st.write("\nFuentes:")
-                    for fuente in todas_fuentes:
-                        st.write(f"- {fuente}")
+                # Mostrar fuentes
+                st.write("\nFuentes:")
+                for fuente in todas_fuentes:
+                    st.write(f"- {fuente}")
 
-                    # Crear documento DOCX
-                    doc = create_docx(termino, definiciones, todas_fuentes)
+                # Crear documento DOCX
+                doc = create_docx(termino, definiciones, todas_fuentes)
 
-                    # Guardar el documento DOCX en memoria
-                    docx_file = BytesIO()
-                    doc.save(docx_file)
-                    docx_file.seek(0)
+                # Guardar el documento DOCX en memoria
+                docx_file = BytesIO()
+                doc.save(docx_file)
+                docx_file.seek(0)
 
-                    # Opción para exportar a DOCX
-                    st.download_button(
-                        label="Descargar definiciones como DOCX",
-                        data=docx_file,
-                        file_name=f"definiciones_{termino.lower().replace(' ', '_')}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    )
-
-            elif not termino:
-                st.warning("Por favor, selecciona o ingresa un término.")
-            elif not autores_seleccionados:
-                st.warning("Por favor, selecciona al menos un autor.")
+                # Opción para exportar a DOCX
+                st.download_button(
+                    label="Descargar definiciones como DOCX",
+                    data=docx_file,
+                    file_name=f"definiciones_{termino.lower().replace(' ', '_')}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+        else:
+            st.warning("Por favor, selecciona un término económico y al menos un autor.")
