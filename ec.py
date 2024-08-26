@@ -89,7 +89,7 @@ with col2:
     def buscar_informacion(query, autor):
         url = "https://google.serper.dev/search"
         payload = json.dumps({
-            "q": f"{query} {autor} Escuela de Salamanca economía"
+            "q": f"{query} {autor} site:scholar.google.com"
         })
         headers = {
             'X-API-KEY': SERPER_API_KEY,
