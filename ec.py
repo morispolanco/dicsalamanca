@@ -5,7 +5,7 @@ from docx import Document
 from io import BytesIO
 
 # Configuración de la página
-st.set_page_config(page_title="Diccionario Económico - Escuela de Salamanca", page_icon="📚", layout="wide")
+st.set_page_config(page_title="Diccionario Económico de la Escuela de Salamanca", page_icon="📚", layout="wide")
 
 # Función para crear la columna de información
 def crear_columna_info():
@@ -33,7 +33,7 @@ def crear_columna_info():
     """)
 
 # Título de la aplicación
-st.title("Diccionario Económico - Escuela de Salamanca")
+st.title("Diccionario Económico de la Escuela de Salamanca")
 
 # Crear un diseño de dos columnas
 col1, col2 = st.columns([1, 2])
