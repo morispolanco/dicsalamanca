@@ -25,7 +25,7 @@ def crear_columna_info():
     ### Autor y Año:
     **Moris Polanco**, 2024
 
-    #3# Cómo citar esta aplicación (formato APA):
+    ### Cómo citar esta aplicación (formato APA):
     Polanco, M. (2024). *Diccionario Económico - Escuela de Salamanca* [Aplicación web]. https://url-de-la-aplicacion.com
 
     ---
@@ -102,6 +102,7 @@ with col2:
         url = "https://api.together.xyz/inference"
         payload = json.dumps({
             "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
+            "prompt": f"Contexto: {contexto}\n\nTérmino: {termino}\nAutor: {autor}\n\nProporciona una definición del término económico '{termino}' según el pensamiento de {autor}, un autor de la Escuela de Salamanca. La definición debe ser concisa pero informativa, similar a una entrada de diccionario. Si es posible, incluye una referencia a una obra específica de {autor} que trate este concepto.\n\nDefinición:",
             "max_tokens": 2048,
             "temperature": 0.3,
             "top_p": 0.7,
@@ -146,8 +147,8 @@ with col2:
         termino = st.text_input("Ingresa tu propio término económico:")
 
     # Selección de autores
-    st.write("Selecciona uno o más autores de la Escuela de Salamanca (máximo 5):")
-    autores_seleccionados = st.multiselect("Autores", autores_salamanca, max_selections=5)
+    st.write("Selecciona uno o más autores de la Escuela de Salamanca:")
+    autores_seleccionados = st.multiselect("Autores", autores_salamanca)
 
     if st.button("Obtener definición"):
         if termino and autores_seleccionados:
@@ -158,38 +159,44 @@ with col2:
                 for autor in autores_seleccionados:
                     # Buscar información relevante
                     resultados_busqueda = buscar_informacion(termino, autor)
-                    contexto = ""
-                    if 'organic' in resultados_busqueda:
-                        for item in resultados_busqueda['organic']:
-                            if 'snippet' in item:
-                                contexto += item['snippet'] + " "
+                    contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda.get('organic', [])])
 
-                    # Generar definición usando Together API
+                    # Generar definición
                     definicion = generar_definicion(termino, autor, contexto)
                     definiciones[autor] = definicion
 
-                    # Recolectar las fuentes
-                    if 'organic' in resultados_busqueda:
-                        fuentes = [item['title'] + " - " + item['link'] for item in resultados_busqueda['organic']]
-                        todas_fuentes.extend(fuentes)
+                    # Recopilar fuentes
+                    fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('organic', [])[:3]]
+                    todas_fuentes.extend(fuentes)
 
-                # Mostrar resultados en la aplicación
+                # Mostrar definiciones
+                st.write(f"Definiciones de '{termino}':")
                 for autor, definicion in definiciones.items():
-                    st.markdown(f"### Definición según {autor}")
+                    st.write(f"\nSegún {autor}:")
                     st.write(definicion)
 
                 # Mostrar fuentes
-                st.markdown("### Fuentes utilizadas")
+                st.write("\nFuentes:")
                 for fuente in todas_fuentes:
-                    st.markdown(f"- {fuente}")
+                    st.write(f"- {fuente}")
 
-                # Opción para descargar la información como DOCX
+                # Crear documento DOCX
                 doc = create_docx(termino, definiciones, todas_fuentes)
-                bio = BytesIO()
-                doc.save(bio)
-                bio.seek(0)
-                st.download_button(label="Descargar como DOCX", data=bio.getvalue(), file_name="definiciones.docx", mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
 
-        else:
-            st.warning("Por favor, selecciona un término y al menos un autor.")
+                # Guardar el documento DOCX en memoria
+                docx_file = BytesIO()
+                doc.save(docx_file)
+                docx_file.seek(0)
 
+                # Opción para exportar a DOCX
+                st.download_button(
+                    label="Descargar definiciones como DOCX",
+                    data=docx_file,
+                    file_name=f"definiciones_{termino.lower().replace(' ', '_')}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                )
+
+        elif not termino:
+            st.warning("Por favor, selecciona o ingresa un término.")
+        elif not autores_seleccionados:
+            st.warning("Por favor, selecciona al menos un autor.")
