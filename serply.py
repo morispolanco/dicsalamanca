@@ -2,7 +2,10 @@ import streamlit as st
 import requests
 import json
 from docx import Document
+from docx.shared import Inches
+from docx.enum.dml import MSO_THEME_COLOR_INDEX
 from io import BytesIO
+import re
 
 # Configuración de la página
 st.set_page_config(page_title="Diccionario Económico de la Escuela de Salamanca", page_icon="📚", layout="wide")
@@ -19,8 +22,8 @@ def crear_columna_info():
     1. Elija un término económico de la lista predefinida o proponga su propio término.
     2. Seleccione si desea generar un artículo de diccionario o un ensayo académico.
     3. Haga clic en "Generar contenido" para obtener el resultado.
-    4. Lea el contenido generado y las fuentes proporcionadas.
-    5. Si lo desea, descargue un documento DOCX con toda la información.
+    4. Lea el contenido generado con enlaces a las fuentes citadas.
+    5. Si lo desea, descargue un documento DOCX con toda la información y enlaces activos.
 
     ### Autor y actualización:
     **Moris Polanco**, 25 ag 2024
@@ -90,7 +93,8 @@ with col2:
             El artículo debe ser conciso pero informativo, similar a una entrada de diccionario enciclopédico.
             Utiliza y cita las siguientes fuentes en tu respuesta:
             {fuentes_str}
-            Asegúrate de incluir citas en el texto y una lista de referencias al final."""
+            Asegúrate de incluir citas en el texto y una lista de referencias al final. 
+            Para cada cita en el texto, usa el formato [Autor, Año] y asegúrate de que corresponda con una entrada en la lista de referencias."""
         else:
             prompt = f"""Escribe un ensayo académico sobre el término económico '{termino}' desde la perspectiva de la Escuela de Salamanca. 
             Incluye una discusión de varios autores de esta escuela, citando sus obras. 
@@ -98,7 +102,8 @@ with col2:
             Proporciona un análisis crítico y comparativo de estas perspectivas.
             Utiliza y cita las siguientes fuentes en tu ensayo:
             {fuentes_str}
-            Asegúrate de incluir citas en el texto y una lista de referencias al final."""
+            Asegúrate de incluir citas en el texto y una lista de referencias al final. 
+            Para cada cita en el texto, usa el formato [Autor, Año] y asegúrate de que corresponda con una entrada en la lista de referencias."""
 
         payload = json.dumps({
             "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
@@ -117,7 +122,41 @@ with col2:
         response = requests.post(url, headers=headers, data=payload)
         return response.json()['output']['choices'][0]['text'].strip()
 
-    def create_docx(termino, contenido, tipo_contenido):
+    def add_hyperlink(paragraph, url, text):
+        # This gets access to the document.xml.rels file and gets a new relation id value
+        part = paragraph.part
+        r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
+
+        # Create the w:hyperlink tag and add needed values
+        hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
+        hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
+
+        # Create a w:r element
+        new_run = docx.oxml.shared.OxmlElement('w:r')
+
+        # Create a new w:rPr element
+        rPr = docx.oxml.shared.OxmlElement('w:rPr')
+
+        # Add color if it is needed
+        c = docx.oxml.shared.OxmlElement('w:color')
+        c.set(docx.oxml.shared.qn('w:val'), '0000FF')
+        rPr.append(c)
+
+        # Add underlining
+        u = docx.oxml.shared.OxmlElement('w:u')
+        u.set(docx.oxml.shared.qn('w:val'), 'single')
+        rPr.append(u)
+
+        # Join all the xml elements together add add the required text to the w:r element
+        new_run.append(rPr)
+        new_run.text = text
+        hyperlink.append(new_run)
+
+        paragraph._p.append(hyperlink)
+
+        return hyperlink
+
+    def create_docx(termino, contenido, tipo_contenido, fuentes):
         doc = Document()
         doc.add_heading('Diccionario Económico - Escuela de Salamanca', 0)
 
@@ -125,7 +164,31 @@ with col2:
         doc.add_paragraph(termino)
 
         doc.add_heading(tipo_contenido, level=1)
-        doc.add_paragraph(contenido)
+        
+        # Dividir el contenido en párrafos
+        parrafos = contenido.split('\n\n')
+        
+        for parrafo in parrafos:
+            p = doc.add_paragraph()
+            # Buscar citas en el formato [Autor, Año]
+            citas = re.findall(r'\[([^\]]+)\]', parrafo)
+            partes = re.split(r'\[([^\]]+)\]', parrafo)
+            
+            for i, parte in enumerate(partes):
+                if i % 2 == 0:  # Texto normal
+                    p.add_run(parte)
+                else:  # Cita
+                    # Buscar la fuente correspondiente
+                    for fuente in fuentes:
+                        if parte.lower() in fuente.lower():
+                            # Extraer el enlace de la fuente
+                            enlace = fuente.split(': ')[-1]
+                            # Añadir el hipervínculo
+                            add_hyperlink(p, enlace, f'[{parte}]')
+                            break
+                    else:
+                        # Si no se encuentra una fuente correspondiente, añadir el texto sin hipervínculo
+                        p.add_run(f'[{parte}]')
 
         doc.add_paragraph('\nNota: Este documento fue generado por un asistente de IA. Verifica la información con fuentes académicas para un análisis más profundo.')
 
@@ -158,10 +221,37 @@ with col2:
 
                 # Mostrar contenido
                 st.write(f"{tipo_contenido} para '{termino}':")
-                st.write(contenido)
+                
+                # Dividir el contenido en párrafos
+                parrafos = contenido.split('\n\n')
+                
+                for parrafo in parrafos:
+                    # Buscar citas en el formato [Autor, Año]
+                    citas = re.findall(r'\[([^\]]+)\]', parrafo)
+                    partes = re.split(r'\[([^\]]+)\]', parrafo)
+                    
+                    nuevo_parrafo = ""
+                    for i, parte in enumerate(partes):
+                        if i % 2 == 0:  # Texto normal
+                            nuevo_parrafo += parte
+                        else:  # Cita
+                            # Buscar la fuente correspondiente
+                            for fuente in fuentes:
+                                if parte.lower() in fuente.lower():
+                                    # Extraer el enlace de la fuente
+                                    enlace = fuente.split(': ')[-1]
+                                    # Añadir el hipervínculo
+                                    nuevo_parrafo += f'[{parte}]({enlace})'
+                                    break
+                            else:
+                                # Si no se encuentra una fuente correspondiente, dejar el texto sin hipervínculo
+                                nuevo_parrafo += f'[{parte}]'
+                    
+                    st.markdown(nuevo_parrafo)
+                    st.write("")  # Añadir un espacio entre párrafos
 
                 # Crear documento DOCX
-                doc = create_docx(termino, contenido, tipo_contenido)
+                doc = create_docx(termino, contenido, tipo_contenido, fuentes)
 
                 # Guardar el documento DOCX en memoria
                 docx_file = BytesIO()
