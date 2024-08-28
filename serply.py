@@ -81,17 +81,24 @@ with col2:
         response = requests.get(url, headers=headers, params=params)
         return response.json()
 
-    def generar_contenido(termino, tipo_contenido):
+    def generar_contenido(termino, tipo_contenido, fuentes):
         url = "https://api.together.xyz/inference"
+        fuentes_str = "\n".join([f"- {fuente}" for fuente in fuentes])
         if tipo_contenido == "Generar artículo de diccionario":
             prompt = f"""Crea un artículo de diccionario para el término económico '{termino}' basado en el pensamiento de la Escuela de Salamanca. 
             Incluye definiciones y discusiones de varios autores de esta escuela, citando sus obras específicas. 
-            El artículo debe ser conciso pero informativo, similar a una entrada de diccionario enciclopédico."""
+            El artículo debe ser conciso pero informativo, similar a una entrada de diccionario enciclopédico.
+            Utiliza y cita las siguientes fuentes en tu respuesta:
+            {fuentes_str}
+            Asegúrate de incluir citas en el texto y una lista de referencias al final."""
         else:
             prompt = f"""Escribe un ensayo académico sobre el término económico '{termino}' desde la perspectiva de la Escuela de Salamanca. 
             Incluye una discusión de varios autores de esta escuela, citando sus obras. 
             Además, compara el concepto con la interpretación en la Doctrina Social de la Iglesia y los principios de la Escuela Austríaca de Economía. 
-            Proporciona un análisis crítico y comparativo de estas perspectivas."""
+            Proporciona un análisis crítico y comparativo de estas perspectivas.
+            Utiliza y cita las siguientes fuentes en tu ensayo:
+            {fuentes_str}
+            Asegúrate de incluir citas en el texto y una lista de referencias al final."""
 
         payload = json.dumps({
             "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
@@ -110,7 +117,7 @@ with col2:
         response = requests.post(url, headers=headers, data=payload)
         return response.json()['output']['choices'][0]['text'].strip()
 
-    def create_docx(termino, contenido, fuentes, tipo_contenido):
+    def create_docx(termino, contenido, tipo_contenido):
         doc = Document()
         doc.add_heading('Diccionario Económico - Escuela de Salamanca', 0)
 
@@ -119,10 +126,6 @@ with col2:
 
         doc.add_heading(tipo_contenido, level=1)
         doc.add_paragraph(contenido)
-
-        doc.add_heading('Fuentes', level=1)
-        for fuente in fuentes:
-            doc.add_paragraph(fuente, style='List Bullet')
 
         doc.add_paragraph('\nNota: Este documento fue generado por un asistente de IA. Verifica la información con fuentes académicas para un análisis más profundo.')
 
@@ -147,21 +150,18 @@ with col2:
                 # Buscar información relevante
                 resultados_busqueda = buscar_informacion(termino)
                 
+                # Recopilar fuentes
+                fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('results', [])[:5]]
+                
                 # Generar contenido
-                contenido = generar_contenido(termino, tipo_contenido)
+                contenido = generar_contenido(termino, tipo_contenido, fuentes)
 
                 # Mostrar contenido
                 st.write(f"{tipo_contenido} para '{termino}':")
                 st.write(contenido)
 
-                # Recopilar y mostrar fuentes
-                fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('results', [])[:5]]
-                st.write("\nFuentes:")
-                for fuente in fuentes:
-                    st.write(f"- {fuente}")
-
                 # Crear documento DOCX
-                doc = create_docx(termino, contenido, fuentes, tipo_contenido)
+                doc = create_docx(termino, contenido, tipo_contenido)
 
                 # Guardar el documento DOCX en memoria
                 docx_file = BytesIO()
