@@ -25,14 +25,18 @@ def buscar_informacion(query):
         'Content-Type': 'application/json'
     }
     response = requests.request("POST", url, headers=headers, data=payload)
-    return response.json()
+    resultados = response.json().get('organic', [])
+    
+    # Ampliar a los primeros 5 resultados para más contexto
+    contexto = "\n".join([result.get('snippet', '') for result in resultados[:5]])
+    return contexto, resultados
 
 def generar_respuesta(prompt, contexto):
     url = "https://api.together.xyz/inference"
     payload = json.dumps({
         "model": "mistralai/Mixtral-8x7B-Instruct-v0.1",
-        "prompt": f"Contexto: {contexto}\n\nPregunta: {prompt}\n\nResponde la pregunta basándote en el contexto proporcionado y tu conocimiento sobre los conceptos económicos según la Escuela de Salamanca. Incluye referencias a obras específicas de los autores de esta escuela cuando sea posible.\n\nRespuesta:",
-        "max_tokens": 5512,
+        "prompt": f"Contexto: {contexto}\n\nPregunta: {prompt}\n\nResponde la pregunta de manera extensa, proporcionando un análisis detallado de los conceptos económicos según la Escuela de Salamanca. Incluye referencias a las principales obras y autores. No te limites a un resumen breve, elabora en profundidad la respuesta con al menos 4 fuentes.\n\nRespuesta:",
+        "max_tokens": 7000,  # Aumentar el número de tokens
         "temperature": 0.7,
         "top_p": 0.7,
         "top_k": 50,
@@ -71,8 +75,7 @@ if st.button("Obtener respuesta"):
     if pregunta:
         with st.spinner("Buscando información y generando respuesta..."):
             # Buscar información relevante
-            resultados_busqueda = buscar_informacion(pregunta)
-            contexto = "\n".join([result.get('snippet', '') for result in resultados_busqueda.get('organic', [])])
+            contexto, resultados_busqueda = buscar_informacion(pregunta)
 
             # Generar respuesta
             respuesta = generar_respuesta(pregunta, contexto)
@@ -84,7 +87,7 @@ if st.button("Obtener respuesta"):
             # Mostrar fuentes
             st.write("Fuentes:")
             fuentes = []
-            for resultado in resultados_busqueda.get('organic', [])[:3]:
+            for resultado en resultados_busqueda[:5]:  # Ampliar a 5 fuentes
                 fuente = f"{resultado['title']}: {resultado['link']}"
                 st.write(f"- [{resultado['title']}]({resultado['link']})")
                 fuentes.append(fuente)
