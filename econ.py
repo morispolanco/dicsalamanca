@@ -189,15 +189,12 @@ if st.button("Obtener respuesta"):
             st.write("Respuesta:")
             st.write(respuesta)
 
-            # Mostrar fuentes
-            st.write("Fuentes:")
+            # Crear documento DOCX
             fuentes = []
             for resultado in resultados_busqueda[:5]:  # Ampliar a 5 fuentes
                 fuente = f"{resultado['title']}: {resultado['link']}"
-                st.write(f"- [{resultado['title']}]({resultado['link']})")
                 fuentes.append(fuente)
 
-            # Crear documento DOCX
             doc = create_docx(pregunta, respuesta, fuentes)
 
             # Guardar el documento DOCX en memoria
