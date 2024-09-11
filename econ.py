@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import json
 from docx import Document
-from docx.shared import Inches
 from io import BytesIO
 
 # Configuración de la página
@@ -87,7 +86,7 @@ if st.button("Obtener respuesta"):
             # Mostrar fuentes
             st.write("Fuentes:")
             fuentes = []
-            for resultado en resultados_busqueda[:5]:  # Ampliar a 5 fuentes
+            for resultado in resultados_busqueda[:5]:  # Ampliar a 5 fuentes
                 fuente = f"{resultado['title']}: {resultado['link']}"
                 st.write(f"- [{resultado['title']}]({resultado['link']})")
                 fuentes.append(fuente)
