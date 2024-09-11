@@ -49,7 +49,7 @@ with col1:
 with col2:
     # Acceder a las claves de API de los secretos de Streamlit
     TOGETHER_API_KEY = st.secrets["TOGETHER_API_KEY"]
-    SERPLY_API_KEY = st.secrets["SERPLY_API_KEY"]
+    SERPAPI_API_KEY = st.secrets["SERPAPI_API_KEY"]
 
     # Lista de términos económicos
     terminos_economicos = [
@@ -73,15 +73,12 @@ with col2:
     ]
 
     def buscar_informacion(query):
-        url = "https://api.serply.io/v1/scholar"
+        url = "https://serpapi.com/search?engine=google_scholar_cite"
         params = {
-            "q": f"{query} Escuela de Salamanca economía"
+            "q": f"{query} Escuela de Salamanca economía",
+            "api_key": SERPAPI_API_KEY
         }
-        headers = {
-            'X-Api-Key': SERPLY_API_KEY,
-            'Content-Type': 'application/json'
-        }
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(url, params=params)
         return response.json()
 
     def generar_contenido(termino, tipo_contenido, fuentes):
@@ -123,75 +120,47 @@ with col2:
         return response.json()['output']['choices'][0]['text'].strip()
 
     def add_hyperlink(paragraph, url, text):
-        # This gets access to the document.xml.rels file and gets a new relation id value
         part = paragraph.part
         r_id = part.relate_to(url, docx.opc.constants.RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
-
-        # Create the w:hyperlink tag and add needed values
         hyperlink = docx.oxml.shared.OxmlElement('w:hyperlink')
         hyperlink.set(docx.oxml.shared.qn('r:id'), r_id, )
-
-        # Create a w:r element
         new_run = docx.oxml.shared.OxmlElement('w:r')
-
-        # Create a new w:rPr element
         rPr = docx.oxml.shared.OxmlElement('w:rPr')
-
-        # Add color if it is needed
         c = docx.oxml.shared.OxmlElement('w:color')
         c.set(docx.oxml.shared.qn('w:val'), '0000FF')
         rPr.append(c)
-
-        # Add underlining
         u = docx.oxml.shared.OxmlElement('w:u')
         u.set(docx.oxml.shared.qn('w:val'), 'single')
         rPr.append(u)
-
-        # Join all the xml elements together add add the required text to the w:r element
         new_run.append(rPr)
         new_run.text = text
         hyperlink.append(new_run)
-
         paragraph._p.append(hyperlink)
-
         return hyperlink
 
     def create_docx(termino, contenido, tipo_contenido, fuentes):
         doc = Document()
         doc.add_heading('Diccionario Económico - Escuela de Salamanca', 0)
-
         doc.add_heading('Término', level=1)
         doc.add_paragraph(termino)
-
         doc.add_heading(tipo_contenido, level=1)
-        
-        # Dividir el contenido en párrafos
         parrafos = contenido.split('\n\n')
-        
         for parrafo in parrafos:
             p = doc.add_paragraph()
-            # Buscar citas en el formato [Autor, Año]
             citas = re.findall(r'\[([^\]]+)\]', parrafo)
             partes = re.split(r'\[([^\]]+)\]', parrafo)
-            
             for i, parte in enumerate(partes):
-                if i % 2 == 0:  # Texto normal
+                if i % 2 == 0:
                     p.add_run(parte)
-                else:  # Cita
-                    # Buscar la fuente correspondiente
+                else:
                     for fuente in fuentes:
                         if parte.lower() in fuente.lower():
-                            # Extraer el enlace de la fuente
                             enlace = fuente.split(': ')[-1]
-                            # Añadir el hipervínculo
                             add_hyperlink(p, enlace, f'[{parte}]')
                             break
                     else:
-                        # Si no se encuentra una fuente correspondiente, añadir el texto sin hipervínculo
                         p.add_run(f'[{parte}]')
-
         doc.add_paragraph('\nNota: Este documento fue generado por un asistente de IA. Verifica la información con fuentes académicas para un análisis más profundo.')
-
         return doc
 
     # Interfaz de usuario
@@ -204,61 +173,37 @@ with col2:
     else:
         termino = st.text_input("Ingresa tu propio término económico:")
 
-    # Selección del tipo de contenido
     tipo_contenido = st.radio("Selecciona el tipo de contenido a generar:", ["Generar artículo de diccionario", "Generar ensayo académico"])
 
     if st.button("Generar contenido"):
         if termino:
             with st.spinner("Buscando información y generando contenido..."):
-                # Buscar información relevante
                 resultados_busqueda = buscar_informacion(termino)
-                
-                # Recopilar fuentes
-                fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('results', [])[:5]]
-                
-                # Generar contenido
+                fuentes = [f"{resultado['title']}: {resultado['link']}" for resultado in resultados_busqueda.get('citations', [])[:5]]
                 contenido = generar_contenido(termino, tipo_contenido, fuentes)
-
-                # Mostrar contenido
                 st.write(f"{tipo_contenido} para '{termino}':")
-                
-                # Dividir el contenido en párrafos
                 parrafos = contenido.split('\n\n')
-                
                 for parrafo in parrafos:
-                    # Buscar citas en el formato [Autor, Año]
                     citas = re.findall(r'\[([^\]]+)\]', parrafo)
                     partes = re.split(r'\[([^\]]+)\]', parrafo)
-                    
                     nuevo_parrafo = ""
                     for i, parte in enumerate(partes):
-                        if i % 2 == 0:  # Texto normal
+                        if i % 2 == 0:
                             nuevo_parrafo += parte
-                        else:  # Cita
-                            # Buscar la fuente correspondiente
+                        else:
                             for fuente in fuentes:
                                 if parte.lower() in fuente.lower():
-                                    # Extraer el enlace de la fuente
                                     enlace = fuente.split(': ')[-1]
-                                    # Añadir el hipervínculo
                                     nuevo_parrafo += f'[{parte}]({enlace})'
                                     break
                             else:
-                                # Si no se encuentra una fuente correspondiente, dejar el texto sin hipervínculo
                                 nuevo_parrafo += f'[{parte}]'
-                    
                     st.markdown(nuevo_parrafo)
-                    st.write("")  # Añadir un espacio entre párrafos
-
-                # Crear documento DOCX
+                    st.write("")  
                 doc = create_docx(termino, contenido, tipo_contenido, fuentes)
-
-                # Guardar el documento DOCX en memoria
                 docx_file = BytesIO()
                 doc.save(docx_file)
                 docx_file.seek(0)
-
-                # Opción para exportar a DOCX
                 st.download_button(
                     label="Descargar contenido como DOCX",
                     data=docx_file,
